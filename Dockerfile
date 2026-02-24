@@ -47,6 +47,7 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
     dosfstools \
     mtools \
     u-boot-tools \
+    parted \
     # editor (you used vim)
     vim \
   && rm -rf /var/lib/apt/lists/*
