@@ -1,32 +1,30 @@
 # Ubuntu 24.04 build image for: BusyBox + Linux kernel (arm64) + U-Boot + FAT image tooling
+
 FROM ubuntu:24.04
 
-ARG TARGETARCH
+ARG DEBIAN_FRONTEND=noninteractive
 
-ENV DEBIAN_FRONTEND=noninteractive
-SHELL ["/bin/bash", "-o", "pipefail", "-c"]
+# 👇 build-time parameter with a default
+ARG KERNEL_VER=6.12.74
+ARG MUSL_CROSS_MAKE_REF=v0.9.11
 
+RUN apt-get update && apt-get install -y --no-install-recommends \
+    build-essential git wget ca-certificates \
+    gawk bison flex texinfo \
+    libgmp-dev libmpc-dev libmpfr-dev \
+    rsync xz-utils \
+  && rm -rf /var/lib/apt/lists/*
 
-# ---- arm64 variant: native aarch64 + musl wrapper ----
-RUN if [ "$TARGETARCH" = "arm64" ]; then \
-      apt-get update && apt-get install -y --no-install-recommends musl-dev && \
-      rm -rf /var/lib/apt/lists/* ; \
-    fi
+WORKDIR /work
+COPY toolchain/ toolchain/
 
-# ---- amd64 variant: build aarch64-linux-musl toolchain ----
-RUN if [ "$TARGETARCH" = "amd64" ]; then \
-      apt-get update && apt-get install -y --no-install-recommends \
-        ca-certificates git build-essential wget \
-        gawk bison flex texinfo \
-        libgmp-dev libmpc-dev libmpfr-dev && \
-      rm -rf /var/lib/apt/lists/* && \
-      git clone https://github.com/richfelker/musl-cross-make.git /opt/musl-cross-make && \
-      make -C /opt/musl-cross-make -j1 TARGET=aarch64-linux-musl && \
-      make -C /opt/musl-cross-make TARGET=aarch64-linux-musl install && \
-      ln -s /opt/musl-cross-make/output/aarch64-linux-musl/bin/aarch64-linux-musl-gcc /usr/local/bin/aarch64-linux-musl-gcc && \
-      ln -s /opt/musl-cross-make/output/aarch64-linux-musl/bin/aarch64-linux-musl-ld /usr/local/bin/aarch64-linux-musl-ld && \
-      true ; \
-    fi
+# (optional) also expose it at runtime
+#ENV KERNEL_VER=${KERNEL_VER}
+#ENV MUSL_CROSS_MAKE_REF=${MUSL_CROSS_MAKE_REF}
+
+RUN make -C toolchain toolchain KERNEL_VER="${KERNEL_VER}" MUSL_CROSS_MAKE_REF=${MUSL_CROSS_MAKE_REF} JOBS=1
+
+ENV PATH="/opt/toolchains/aarch64-linux-musl/bin:${PATH}"
 
 # Core build deps + cross toolchains + common utilities
 RUN apt-get update && apt-get install -y --no-install-recommends \
