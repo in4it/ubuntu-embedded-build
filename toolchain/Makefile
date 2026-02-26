@@ -20,14 +20,14 @@ KERN_TAR ?= $(WORKDIR)/linux-$(KERNEL_VER).tar.xz
 KERN_DIR ?= $(WORKDIR)/linux-$(KERNEL_VER)
 
 TARGET   ?= aarch64-linux-musl
-JOBS     ?= 1                # keep 1 to avoid tar rename issues on overlayfs
+
+JOBS     := $(shell nproc)
 
 .PHONY: toolchain clean kernel-headers musl-cross-make
 
 toolchain: musl-cross-make kernel-headers
 	@echo "Toolchain ready: $(PREFIX)"
 	@echo "Sysroot ready:  $(SYSROOT)"
-	@$(PREFIX)/bin/$(TARGET)-gcc -v | head -n 3
 	@echo "Kernel headers installed into sysroot: $(SYSROOT)/usr/include"
 
 musl-cross-make:
@@ -38,14 +38,10 @@ musl-cross-make:
 	cd "$(MCM_DIR)" && git fetch --all --tags
 	cd "$(MCM_DIR)" && git checkout "$(MUSL_CROSS_MAKE_REF)"
 	# Install toolchain into /opt/toolchains/aarch64-linux-musl
-	cd "$(MCM_DIR)" && \
-	  make -j$(JOBS) TARGET=$(TARGET) && \
-	  make TARGET=$(TARGET) install
-	# Move/ensure install location is stable
-	# musl-cross-make installs under output/<target>/ by default
+	cd "$(MCM_DIR)" && make -j$(JOBS) TARGET=$(TARGET) && make -j$(JOBS) TARGET=$(TARGET) install
 	rm -rf "$(PREFIX)"
 	mkdir -p "$(OUT)"
-	mv "$(MCM_DIR)/output/$(TARGET)" "$(PREFIX)"
+	mv "$(MCM_DIR)/output" "$(PREFIX)"
 
 kernel-headers:
 	mkdir -p $(WORKDIR)

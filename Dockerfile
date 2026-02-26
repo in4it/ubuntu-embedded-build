@@ -22,7 +22,8 @@ COPY toolchain/ toolchain/
 #ENV KERNEL_VER=${KERNEL_VER}
 #ENV MUSL_CROSS_MAKE_REF=${MUSL_CROSS_MAKE_REF}
 
-RUN make -C toolchain toolchain KERNEL_VER="${KERNEL_VER}" MUSL_CROSS_MAKE_REF=${MUSL_CROSS_MAKE_REF} JOBS=1
+RUN make -C toolchain toolchain KERNEL_VER="${KERNEL_VER}" MUSL_CROSS_MAKE_REF=${MUSL_CROSS_MAKE_REF} && \
+    make -C toolchain clean KERNEL_VER=6.12.74 MUSL_CROSS_MAKE_REF=v0.9.11
 
 ENV PATH="/opt/toolchains/aarch64-linux-musl/bin:${PATH}"
 
