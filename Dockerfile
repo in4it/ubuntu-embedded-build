@@ -84,6 +84,8 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
     jq \
     # python-venv
     python3.12-venv \
+    # locales
+    locales \
   && rm -rf /var/lib/apt/lists/*
 
 WORKDIR /build
