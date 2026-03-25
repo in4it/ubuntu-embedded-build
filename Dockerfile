@@ -86,6 +86,11 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
     python3.12-venv \
     # locales
     locales \
+    # yocto build tools
+    chrpath \
+    diffstat \
+    lz4 \
+    zstd \
   && rm -rf /var/lib/apt/lists/*
 
 RUN localedef -i en_US -f UTF-8 en_US.UTF-8
