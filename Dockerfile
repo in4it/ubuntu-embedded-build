@@ -88,6 +88,8 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
     locales \
   && rm -rf /var/lib/apt/lists/*
 
+RUN localedef -i en_US -f UTF-8 en_US.UTF-8
+
 WORKDIR /build
 
 # Optional: keep the image usable without extra flags
