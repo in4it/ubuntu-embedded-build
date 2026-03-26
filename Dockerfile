@@ -93,9 +93,16 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
     zstd \
   && rm -rf /var/lib/apt/lists/*
 
-RUN localedef -i en_US -f UTF-8 en_US.UTF-8
+RUN localedef -i en_US -f UTF-8 en_US.UTF-8 && \
+    usermod -l builduser ubuntu && \
+    groupmod -n builduser ubuntu && \
+    usermod -d /home/builduser -m builduser && \
+    mkdir /build && \
+    chown builduser:builduser /build
 
 WORKDIR /build
+
+USER builduser
 
 # Optional: keep the image usable without extra flags
 ENV LANG=C.UTF-8 \
